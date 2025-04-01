@@ -2,29 +2,24 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AudioService {
-  final String serverUrl = 'http://172.30.1.44:5001/extract'; // 로컬 서버
+  final String _serverUrl = 'http://172.30.1.98:5001/extract'; // 🌐 Flask 서버 주소
 
-  Future<String?> getAudioStreamUrl(String youtubeUrl) async {
+  /// 📡 YouTube 링크로부터 오디오 스트림 URL과 제목을 가져오는 함수
+  Future<Map<String, dynamic>> getAudioStreamUrl(String youtubeUrl) async {
     try {
-      print("📡 [AudioService] 서버에 POST 요청 보냄: $youtubeUrl");
-
       final response = await http.post(
-        Uri.parse(serverUrl),
+        Uri.parse(_serverUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'url': youtubeUrl}),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print("✅ [AudioService] 오디오 URL 응답: ${data['audio_url']}");
-        return data['audio_url'];
+        return jsonDecode(response.body);
       } else {
-        print("❌ [AudioService] 서버 오류: ${response.body}");
-        return null;
+        throw Exception('서버 오류: ${response.statusCode} ${response.body}');
       }
     } catch (e) {
-      print("❌ [AudioService] 요청 실패: $e");
-      return null;
+      throw Exception('서버 요청 실패: $e');
     }
   }
 }
